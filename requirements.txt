@@ -1,2 +1,4 @@
-openai
-simpleeval
+ddgs==9.11.4
+openai==2.29.0
+simpleeval==1.0.7
+tenacity==9.1.4

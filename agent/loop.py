@@ -75,7 +75,7 @@ def _print_usage(prompt_tokens: int, completion_tokens: int) -> None:
     print(f"\n[usage] prompt={prompt_tokens}  completion={completion_tokens}  total={prompt_tokens + completion_tokens}")
 
 
-def loop(client: OpenAI, user_message: str, system_message: str | None = None, max_step: int = 5):
+def loop(client: OpenAI, user_message: str, system_message: str | None = None, max_step: int = 5, verbose: bool = False):
     """Run the ReAct agent loop until the model produces a final answer or steps are exhausted.
 
     On each iteration the model is called with the full conversation history.
@@ -88,6 +88,7 @@ def loop(client: OpenAI, user_message: str, system_message: str | None = None, m
         user_message: The user's initial question or instruction.
         system_message: The system prompt that defines the agent's behaviour.
         max_step: Maximum number of LLM calls before giving up.
+        verbose: If True, print each reasoning step, tool call, and observation.
 
     Returns:
         The model's final text response, or ``"Max steps reached"`` if the
@@ -102,7 +103,7 @@ def loop(client: OpenAI, user_message: str, system_message: str | None = None, m
     prompt_tokens = 0
     completion_tokens = 0
 
-    for _ in range(max_step):
+    for step in range(1, max_step + 1):
         response = _call_api(client, memory.get_message(), tools)
         if response.usage:
             prompt_tokens += response.usage.prompt_tokens
@@ -111,13 +112,29 @@ def loop(client: OpenAI, user_message: str, system_message: str | None = None, m
         response_message = response.choices[0].message
         memory.add_message({k: v for k, v in response_message.model_dump().items() if v is not None})
 
+        if verbose:
+            print(f"\nStep {step}")
+            if response_message.content:
+                print(f"  Thought : {response_message.content}")
+
         if not response_message.tool_calls:
+            if verbose:
+                print("\n--> FINAL ANSWER")
             _print_usage(prompt_tokens, completion_tokens)
             return response_message.content
 
         for call in response_message.tool_calls:
             if isinstance(call, ChatCompletionMessageToolCall):
+                if verbose:
+                    args = json.loads(call.function.arguments)
+                    print(f"  Tool    : {call.function.name}")
+                    print(f"  Args    : {json.dumps(args)}")
                 _tool_call(memory, call)
+                if verbose:
+                    obs = memory.get_message()[-1].get("content", "")
+                    if len(obs) > 300:
+                        obs = obs[:300] + "... [truncated]"
+                    print(f"  Obs     : {obs}")
 
     _print_usage(prompt_tokens, completion_tokens)
     return "Max steps reached"

@@ -71,18 +71,22 @@ Step 4 [Answer]:  The population of Ottawa (approximately 1,017,449) divided by
 ## Project Structure
 
 ```
-react-agent/
+ReAct-Reasoning-Agent/
 ├── agent/
 │   ├── loop.py          # Core ReAct agent loop
 │   ├── memory.py        # Conversation history management
-│   └── config.py        # Max steps, model selection, API settings
+│   └── config.py        # Max steps and API settings
 ├── tools/
-│   ├── base.py          # Tool interface and registry
+│   ├── tool.py          # Tool base class and registry
 │   ├── web_search.py    # DuckDuckGo search wrapper
 │   ├── calculator.py    # Safe math expression evaluator
 │   └── file_reader.py   # Local file reader
+├── data/
+│   ├── countries.txt    # Sample country list for demos
+│   └── sample.csv       # Sample numeric data for demos
 ├── examples/
-│   └── demo_queries.py  # Example multi-step questions
+│   ├── demo_queries.py  # 9 demo scenarios with full trace output
+│   └── trajectories.log # Pre-recorded example trajectories
 ├── main.py              # CLI entry point
 ├── requirements.txt
 └── README.md
@@ -91,8 +95,8 @@ react-agent/
 ## Setup
 
 ```bash
-git clone https://github.com/Pseudoword/react-agent.git
-cd react-agent
+git clone https://github.com/Pseudoword/ReAct-Reasoning-Agent.git
+cd ReAct-Reasoning-Agent
 pip install -r requirements.txt
 export OPENAI_API_KEY="your-key-here"
 ```
@@ -115,21 +119,21 @@ python main.py --file data.csv "What is the average value in the second column?"
 - **LLM:** GPT-4o (via OpenAI API) with native function-calling support
 - **Agent pattern:** ReAct — interleaved reasoning and action with full conversation memory
 - **Tool dispatch:** Structured function calls parsed from the model's response; results appended as `tool` role messages
-- **Safety:** Calculator uses `simpleeval` instead of `eval()` to prevent arbitrary code execution; agent loop capped at configurable max iterations (default: 7)
+- **Safety:** Calculator uses `simpleeval` instead of `eval()` to prevent arbitrary code execution; agent loop capped at configurable max iterations (default: 5)
 - **Memory:** Full message history maintained across steps, providing the agent with complete episodic context for multi-hop reasoning
 
 ## Roadmap
 
 - [x] Project structure and tool interface design
 - [x] README and architecture documentation
-- [ ] Core agent loop with OpenAI function calling
-- [ ] Web search tool (DuckDuckGo)
-- [ ] Calculator tool (simpleeval)
-- [ ] File reader tool
-- [ ] Error handling and max-iteration safeguards
-- [ ] Demo examples with logged trajectories
-- [ ] Retry logic for failed tool calls
-- [ ] Token usage tracking and cost logging
+- [x] Core agent loop with OpenAI function calling
+- [x] Web search tool (DuckDuckGo)
+- [x] Calculator tool (simpleeval)
+- [x] File reader tool
+- [x] Error handling and max-iteration safeguards
+- [x] Demo examples with logged trajectories
+- [x] Retry logic for failed tool calls
+- [x] Token usage tracking and cost logging
 
 ## Acknowledgments
 
