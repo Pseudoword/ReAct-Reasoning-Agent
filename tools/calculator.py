@@ -2,6 +2,7 @@ from tools.tool import Tool
 import simpleeval
 
 class Calculator(Tool):
+    """Tool that safely evaluates mathematical expressions using ``simpleeval``."""
 
     def __init__(self):
         name = "calculator"
@@ -18,7 +19,18 @@ class Calculator(Tool):
         }
         super().__init__(name, description, parameters)
 
-    def execute(self, args: dict):
+    def execute(self, args: dict) -> int:
+        """Evaluate the mathematical expression in *args* and return the result.
+
+        Args:
+            args: Must contain an ``"expression"`` key with a string expression.
+
+        Returns:
+            The numeric result of the evaluated expression.
+
+        Raises:
+            KeyError: If ``"expression"`` is absent from *args*.
+        """
         if "expression" not in args:
             raise KeyError('"expression" is missing')
         return simpleeval.simple_eval(args["expression"])
